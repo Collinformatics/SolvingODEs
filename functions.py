@@ -1,4 +1,3 @@
-from collections import Counter
 from colorama import Fore, Style
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -22,9 +21,6 @@ magenta = Fore.MAGENTA
 white = Fore.LIGHTWHITE_EX
 bold = Style.BRIGHT
 rst = Style.RESET_ALL
-
-# GPU Usage
-# print(f'Jax Device: {jax.default_backend()}')
 
 
 def pressKey(event):
@@ -70,6 +66,7 @@ class ODE:
         self.roundVal = 3
         self.headerLen = 80
         self.rstFloat = False
+        self.webBrowserFigs = True
 
         # Params: Figures
         self.figDir = 'Figures'
@@ -82,8 +79,7 @@ class ODE:
         self.tickLength = 4
         self.figureResolution = 600
         
-        if not os.path.exists(self.figDir):
-            os.makedirs(self.figDir, exist_ok=True)
+        self.mkdir(self.figDir)
 
         # Set options
         pd.set_option('display.max_columns', None)
@@ -101,6 +97,19 @@ class ODE:
             self.rstFloat = False
 
 
+    @staticmethod
+    def mkdir(path):
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+
+
+    @staticmethod
+    def formatList(x):
+        if not isinstance(x, list):
+            x = list(x)
+        return x
+
+
     def header(self, txt=''):
         if txt:
             l = len(txt) + 2
@@ -113,66 +122,95 @@ class ODE:
             print('='*self.headerLen)
 
 
-    def showMatrix(self, array, idx='', col='', label='Matrix', label2='',
-                   pHeader=False, pSpace=False, sumColumns=False):
+    def forwardEuler(self, time, nDatapoints, y0, plotFig=True, lineColor='green',
+                     figTitle='Euler Method', figName='Euler', figDir='', pHeader=False):
         if pHeader:
-            self.header()
-        # if not idx and len(array) > 1:
-        #     idx = [i for i in range(len(array))]
-        # else:
-        idx = self.checkList(idx)
-        col = self.checkList(col)
-        if label2:
-            print(f'{green}{label}{rst}: {pink}{label2}{rst}')
+            if isinstance(pHeader, str):
+                self.header(txt=pHeader)
+            else:
+                self.header()
+        print(f'Forward Euler')
+        dt = time / nDatapoints
+        t = np.zeros(nDatapoints+1)
+        y = np.zeros(nDatapoints+1)
+
+        # Evaluate
+        y[0] = y0
+        for n in range(nDatapoints):
+            t[n + 1] = t[n] + dt
+            y[n + 1] = (1 + dt) * y[n]
+        d = pd.DataFrame(y, index=t, columns=['Euler'])
+        print(f'Data:\n{d}\n')
+
+        if plotFig:
+            self.plotLines(
+                data=d, colors=lineColor, title=figTitle, figName=figName,
+                labelX='Time', labelY='y(t)', figDir=figDir
+            )
+
+        return d
+
+    
+    @staticmethod
+    def rk4(time, f, h, y0):
+        print(f'Runge-Kutta')
+        d = pd.DataFrame(0.0, index=time, columns=['RK4'])
+
+        def step(t, u):
+            k1 = f(t, u)
+            k2 = f(t + h/2, u + h/2 * k1)
+            k3 = f(t + h / 2, u + h / 2 * k2)
+            k4 = f(t + h / 2, u + h * k3)
+            return u + h/6 * (k1 + 2*k2 + 2*k3 + k4)
+
+        # Evaluate
+        y = y0
+        for i, time in enumerate(d.index):
+            d.loc[time, 'RK4'] = y
+            y = step(t=time, u=y)
+        print(f'Data:\n{d}\n')
+        return d
+
+    
+    def getFigPath(self, figureName, figDir=''):
+        if figDir:
+            d = os.path.join(self.figDir, figDir)
+            path = os.path.join(d, figureName)
+            self.mkdir(d)
         else:
-            print(f'{green}{label}{rst}:')
-        df = pd.DataFrame(array, index=idx, columns=col)
-        if abs(df.loc[:,:].min(axis=None)) > 10**3:
-            self.formatFloat(sciNotation=True)
-        if sumColumns:
-            df.loc['** Sum **', :] = list(df.sum(axis=1))
-        print(f'{df}\n')
-        self.formatFloat()
-        if pSpace:
-            print()
-
-
-    def saveFig(self, plot, figureName, fig=None):
-        self.header()
-        if figureName:
             path = os.path.join(self.figDir, figureName)
-            plot.savefig(path, bbox_inches='tight')
-            print(f'Figure was saved at path:\n\t{green}{path}{rst}\n')
+        if not path.endswith(('.png', '.jpg', '.jpeg')):
+            path = os.path.splitext(path)[0] + '.png'
+        return path
+
+
+    def saveFig(self, plot, figureName, pathDir):
+        path = self.getFigPath(figureName, pathDir)
+        plot.savefig(path, bbox_inches='tight')
+        print(f'Figure was saved at path:\n\t{green}{path}{rst}\n')
+        
+    
+    def plotFig(self, plot, figureName, pathDir='', fig=None):
+        if self.webBrowserFigs:
+            path = self.getFigPath(figureName, pathDir)
+            print(path)
+            if not os.path.exists(path):
+                plot.savefig(path, bbox_inches='tight')
             subprocess.run(['xdg-open', path])  # Open fig in web browser
         else:
             fig.canvas.mpl_connect('key_press_event', pressKey)
             plt.show()
 
 
-    def plotGraph(self, edges, title, figName, nodeSize = 1000, plotFig=True):
-        G = nx.Graph()
-        G.add_edges_from(edges)
-        fig, ax = plt.subplots(figsize=self.figSize)
-        nx.draw(
-            G, ax=ax, with_labels=True,
-            node_size=nodeSize, node_color='lightgreen',
-            font_size=14, font_color='black', font_weight='bold',
-            width=2.0, edge_color='black'
-        )
-        ax.set_title(title, fontsize=self.labelSizeTitle, fontweight='bold')
-        plt.tight_layout()
+    def plotLines(self, data, colors, title, figName, labelX, labelY, yRotate=0,
+                  figDir='', addGrid=True):
+        colors = self.formatList(colors)
+        if len(colors) < len(data.columns):
+            # Verify that there are a sufficient number of strings
+            diff = len(data.columns) - len(colors)
+            colors = [colors.append(colors[0]) for _ in range(diff)]
 
-        # Save figure
-        if plotFig:
-            if '.' not in figName:
-                figName += '.png'
-            self.saveFig(plot=plt, figureName=figName)
-
-        return G
-
-
-    def plotLines(self, data, colors, title,
-                  labelX, labelY, yRotate=0, browserFig=False):
+        # Plot figure
         fig, ax = plt.subplots(figsize=self.figSize)
         for i in range(data.columns.size):
             ax.plot(data.index, data.iloc[:,i], color=colors[i],
@@ -198,12 +236,14 @@ class ODE:
             ax.set_ylim(top=int(np.ceil(ax.get_ylim()[1])))
 
         # Grid
-        ax.grid(True, linewidth=0.25, color='black')
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
+        if addGrid:
+            ax.grid(True, linewidth=0.25, color='black')
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
 
         for _, spine in ax.spines.items():
             spine.set_visible(True)
 
         plt.tight_layout()
-        self.saveFig(plot=plt, figureName=browserFig, fig=fig)
+        self.saveFig(plot=plt, figureName=figName, pathDir=figDir)
+        self.plotFig(plot=plt, figureName=figName, fig=fig)
