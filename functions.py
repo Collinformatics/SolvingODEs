@@ -122,14 +122,14 @@ class ODE:
             print('='*self.headerLen)
 
 
-    def forwardEuler(self, time, nDatapoints, y0, plotFig=True, lineColor='green',
+    def forwardEuler(self, time, nDatapoints, y0, plotFig=False, lineColor='green',
                      figTitle='Euler Method', figName='Euler', figDir='', pHeader=False):
         if pHeader:
             if isinstance(pHeader, str):
                 self.header(txt=pHeader)
             else:
                 self.header()
-        print(f'Forward Euler')
+        print(f'Forward Euler\n')
         dt = time / nDatapoints
         t = np.zeros(nDatapoints+1)
         y = np.zeros(nDatapoints+1)
@@ -139,7 +139,7 @@ class ODE:
         for n in range(nDatapoints):
             t[n + 1] = t[n] + dt
             y[n + 1] = (1 + dt) * y[n]
-        d = pd.DataFrame(y, index=t, columns=['Euler'])
+        d = pd.DataFrame(y, index=t, columns=[f'Euler, Δt = {dt}'])
         print(f'Data:\n{d}\n')
 
         if plotFig:
@@ -186,35 +186,69 @@ class ODE:
 
     def saveFig(self, plot, figureName, pathDir):
         path = self.getFigPath(figureName, pathDir)
-        plot.savefig(path, bbox_inches='tight')
-        print(f'Figure was saved at path:\n\t{green}{path}{rst}\n')
+        if os.path.exists(path):
+            plot.savefig(path, bbox_inches='tight')
+            print(f'{yellow}Figure was already saved at path, the figure was not '
+                  f'overwritten:\n\t{path}{rst}\n')
+        else:
+            plot.savefig(path, bbox_inches='tight')
+            print(f'Figure was saved at path:\n\t{green}{path}{rst}\n')
         
     
     def plotFig(self, plot, figureName, pathDir='', fig=None):
         if self.webBrowserFigs:
             path = self.getFigPath(figureName, pathDir)
-            print(path)
-            if not os.path.exists(path):
+            if os.path.exists(path):
                 plot.savefig(path, bbox_inches='tight')
-            subprocess.run(['xdg-open', path])  # Open fig in web browser
+                subprocess.run(['xdg-open', path])  # Open fig in web browser
         else:
             fig.canvas.mpl_connect('key_press_event', pressKey)
             plt.show()
 
 
     def plotLines(self, data, colors, title, figName, labelX, labelY, yRotate=0,
-                  figDir='', addGrid=True):
+                  figDir='', addGrid=True, saveFig=True):
         colors = self.formatList(colors)
-        if len(colors) < len(data.columns):
-            # Verify that there are a sufficient number of strings
-            diff = len(data.columns) - len(colors)
-            colors = [colors.append(colors[0]) for _ in range(diff)]
+        # Verify that there are a sufficient number of strings
+        df = True
+        if isinstance(data, pd.DataFrame):
+            numCurves = len(data.columns)
+        else:
+            numCurves = len(data)
+            df = False
+        c = ['black', 'royalblue', 'darkgreen', 'gold', 'indigo', 'darkgray',
+             'lightgreen', 'crimson']
+        diff, n = numCurves-len(colors), len(c)
+        if diff > n:
+            print(1)
+            for _ in range(diff):
+                colors.append(c[random.randint(0, n-1)])
+        else:
+            i = 0
+            while diff + 1 > len(colors):
+                if i > 30:
+                    break
+                clr = c[random.randint(0, n-1)]
+                if clr not in colors:
+                    colors.append(clr)
+                i += 1
+            diff = numCurves - len(colors)
+            if diff != 0:
+                print(f'Diff: {diff}')
+                for _ in range(diff):
+                    colors.append(c[random.randint(0, n - 1)])
 
         # Plot figure
         fig, ax = plt.subplots(figsize=self.figSize)
-        for i in range(data.columns.size):
-            ax.plot(data.index, data.iloc[:,i], color=colors[i],
+        if df:
+            for i in range(numCurves):
+                ax.plot(data.index, data.iloc[:,i], color=colors[i],
                     label=data.columns[i], linewidth=self.lineThickness)
+        else:
+            for i, d in enumerate(data):
+                for c in range(len(d.columns)):
+                    ax.plot(d.index, d.iloc[:, c], color=colors[i],
+                            label=d.columns[c], linewidth=self.lineThickness)
         ax.legend(fontsize=self.labelSizeTicks, loc='best',
                   edgecolor='black', framealpha=0.8)
 
@@ -225,12 +259,7 @@ class ODE:
         ax.tick_params(labelsize=12)
 
         # Axis params
-        xTicks, pad = getAxisTicks(values=data.index)
-        if xTicks:
-            ax.set_xlim(data.index[0]-pad, data.index[-1]+pad)
-            ax.set_xticks(xTicks)
-        else:
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         if max(ax.get_ylim()) > 1:
             ax.set_ylim(top=int(np.ceil(ax.get_ylim()[1])))
@@ -245,5 +274,8 @@ class ODE:
             spine.set_visible(True)
 
         plt.tight_layout()
-        self.saveFig(plot=plt, figureName=figName, pathDir=figDir)
-        self.plotFig(plot=plt, figureName=figName, fig=fig)
+        if saveFig:
+            self.saveFig(plot=plt, figureName=figName, pathDir=figDir)
+        self.plotFig(
+            plot=plt, figureName=figName, pathDir=figDir, fig=fig
+        )
