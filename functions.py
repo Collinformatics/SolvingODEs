@@ -1,3 +1,4 @@
+from autograd import grad
 from colorama import Fore, Style
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -65,8 +66,9 @@ class ODE:
         self.printN = 10
         self.roundVal = 3
         self.headerLen = 80
-        self.rstFloat = False
+        self.rstFloat = True
         self.webBrowserFigs = True
+        self.overwriteFigs = False
 
         # Params: Figures
         self.figDir = 'Figures'
@@ -110,6 +112,11 @@ class ODE:
         return x
 
 
+    @staticmethod
+    def derivative(f):
+        return grad(f, argnum=0)
+
+
     def header(self, txt=''):
         if txt:
             l = len(txt) + 2
@@ -122,33 +129,40 @@ class ODE:
             print('='*self.headerLen)
 
 
-    def forwardEuler(self, time, nDatapoints, y0, plotFig=False, lineColor='green',
-                     figTitle='Euler Method', figName='Euler', figDir='', pHeader=False):
+    def forwardEuler(self, f, y0, time, nDatapoints:list, plotFig=False,
+                     lineColor='green', figTitle='Euler Method', figName='Euler',
+                     figDir='', pHeader=False):
         if pHeader:
             if isinstance(pHeader, str):
                 self.header(txt=pHeader)
             else:
                 self.header()
-        print(f'Forward Euler\n')
-        dt = time / nDatapoints
-        t = np.zeros(nDatapoints+1)
-        y = np.zeros(nDatapoints+1)
 
-        # Evaluate
-        y[0] = y0
-        for n in range(nDatapoints):
-            t[n + 1] = t[n] + dt
-            y[n + 1] = (1 + dt) * y[n]
-        d = pd.DataFrame(y, index=t, columns=[f'Euler, Δt = {dt}'])
-        print(f'Data:\n{d}\n')
+        fPrime = self.derivative(f)
+
+        datasets = []
+        for N in nDatapoints:
+            dt = time / N
+            t = np.zeros(N+1)
+            y = np.zeros(N+1)
+            print(f'Timestep: {red}Δt={dt}{rst}')
+
+            # Evaluate
+            y[0] = y0
+            for n in range(N):
+                t[n + 1] = t[n] + dt
+                y[n + 1] = y[n] + dt * fPrime(t[n])
+            d = pd.DataFrame(y, index=t, columns=[f'Euler, Δt={dt}'])
+            datasets.append(d)
+            print(f'{d}\n\n')
 
         if plotFig:
             self.plotLines(
-                data=d, colors=lineColor, title=figTitle, figName=figName,
+                data=datasets, colors=lineColor, title=figTitle, figName=figName,
                 labelX='Time', labelY='y(t)', figDir=figDir
             )
 
-        return d
+        return datasets
 
     
     @staticmethod
@@ -186,8 +200,7 @@ class ODE:
 
     def saveFig(self, plot, figureName, pathDir):
         path = self.getFigPath(figureName, pathDir)
-        if os.path.exists(path):
-            plot.savefig(path, bbox_inches='tight')
+        if os.path.exists(path) and not self.overwriteFigs:
             print(f'{yellow}Figure was already saved at path, the figure was not '
                   f'overwritten:\n\t{path}{rst}\n')
         else:
@@ -216,8 +229,9 @@ class ODE:
         else:
             numCurves = len(data)
             df = False
-        c = ['black', 'crimson', 'gold', 'darkgreen', 'lightgreen', 'royalblue',
-             'indigo', 'gray']
+        c = ['black', 'crimson', 'gold', 'darkgreen', 'lightgreen', 'limegreen',
+             'teal', 'turquoise', 'royalblue',
+             'indigo', 'darkviolet', 'gray']
         diff, n = numCurves-len(colors), len(c)
         if diff > n:
             print(1)
@@ -234,7 +248,6 @@ class ODE:
                 i += 1
             diff = numCurves - len(colors)
             if diff != 0:
-                print(f'Diff: {diff}')
                 for _ in range(diff):
                     colors.append(c[random.randint(0, n - 1)])
 

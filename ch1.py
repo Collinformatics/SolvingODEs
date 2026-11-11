@@ -10,6 +10,8 @@ from sympy import exp, latex, symbols, pretty
 import sys
 
 
+
+
 ode = ODE()
 
 
@@ -18,38 +20,46 @@ ode = ODE()
 
 We will use the Euler Method as a numerical method to solve a DE.
 
+Try experimenting with a different number of datapoints to see their effect
 
+eˣ
 """
 # Input: Figure Params
-inInitU = 1
-inColors = ['black', 'green', 'purple']
-inTime = 4
+inA = 0.5
+inInitU = 6
+inColors = ['black', 'limegreen', 'deepskyblue', 'violet']
+inTime = 5
 inTimeStep = 0.05
-inNumDatapoints = [40, 20]
+inNumDatapoints = [80, 40, 20]
 
 # Input: Save Params
+inOverwriteFigs = True
 inDirFigure = 'CH1'
 inPlotFig = True
 
 # Generate exponential curve
-e = pretty(exp(symbols('x')))
-time = np.arange(0, inTime + 0.05, 0.05)
-y = [np.exp(x) for x in time]
-data = pd.DataFrame(y, index=time, columns=[e])
+def fn(t, u=inInitU, D=0.05):
+    return t**2 + u
+time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
+y = fn(time)
+data = pd.DataFrame(y, index=time, columns=['Actual'])
 
 # Estimate the curve
 lines = [data]
-for n in inNumDatapoints:
-    lines.append(
-        ode.forwardEuler(
-            y0=inInitU, time=inTime, nDatapoints=n,
-            pHeader='Euler Method', figDir=inDirFigure
-        )
-    )
+curves = ode.forwardEuler(
+    f=fn, y0=inInitU, time=inTime, nDatapoints=inNumDatapoints,
+    pHeader='Euler Method', figDir=inDirFigure
+)
+lines += curves
+
+
+# Set params
+ode.overwriteFigs = inOverwriteFigs
 
 # Plot the approximations
 if inPlotFig:
     ode.plotLines(
         data=lines, colors=inColors, title='Solving an ODE: Forward Euler',
-        figName='eulerSolution', labelX='Time', labelY='y(t)', figDir=inDirFigure,
+        figName=f'eulerSolution_nCurves-{len(inNumDatapoints)}', labelX='Time',
+        labelY='y(t)', figDir=inDirFigure,
     )
