@@ -113,8 +113,15 @@ class ODE:
 
 
     @staticmethod
-    def derivative(f):
-        return grad(f, argnum=0)
+    def derivative(f, idxDiffArg=1):
+        """
+        :param idxDiffArg:
+            Differentiates with respect to the ith argument of f
+            For f(t, u)
+                idxDiffArg=0 -> df/dt
+                idxDiffArg=1 -> df/du
+        """
+        return grad(f, argnum=idxDiffArg)
 
 
     def header(self, txt=''):
@@ -138,7 +145,10 @@ class ODE:
             else:
                 self.header()
 
-        fPrime = self.derivative(f)
+        # Get the derivative of f with respect to the first (or 0th) param
+        # Ex:
+            # f(t, u) -> df/dt
+        fPrime = self.derivative(f, idxDiffArg=0)
 
         datasets = []
         for N in nDatapoints:

@@ -28,7 +28,7 @@ eˣ
 inA = 0.5
 inInitU = 6
 inColors = ['black', 'limegreen', 'deepskyblue', 'violet']
-inTime = 5
+inTime = 3
 inTimeStep = 0.05
 inNumDatapoints = [80, 40, 20]
 
@@ -38,7 +38,7 @@ inDirFigure = 'CH1'
 inPlotFig = True
 
 # Generate exponential curve
-def fn(t, u=inInitU, D=0.05):
+def fn(t, u=inInitU,):
     return t**2 + u
 time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
 y = fn(time)
