@@ -1,6 +1,5 @@
 from autograd import grad
 from colorama import Fore, Style
-import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
@@ -104,13 +103,13 @@ class ODE:
         :param v: round this value
         :param m: round value to a multiple of m
         """
-        return int(math.ceil(v / m) * m)
+        return int(np.ceil(v / m) * m)
 
 
     def getAxisTicks(self, values, largeValues=True, customSteps=None,
                      addZero=True):
-        values, padding, roundBy  = self.formatList(values), 0.05, 5
-        maxVal, padAdj  = int(max(values)), 10
+        values, roundBy = self.formatList(values), 5
+        maxVal, padding, padAdj = int(max(values)), 0.5, False
         if customSteps is None:
             customSteps = []
         if customSteps:
@@ -120,9 +119,7 @@ class ODE:
                 steps = [25, 20, 30, 40, 50, 25, 15, 45, 75, 10, 5]
             else:
                 steps = [4, 3, 2, 1]
-                padding = 0.05
-        dist = self.roundUp(maxVal - values[0], m=roundBy)
-        ticks = []
+        dist, ticks = self.roundUp(maxVal - values[0], m=roundBy), []
         for step in steps:
             if dist % step == 0:
                 ticks = list(np.arange(values[0], maxVal + step, step))
@@ -132,10 +129,11 @@ class ODE:
         if ticks and addZero and 0 not in ticks:
             ticks = np.insert(ticks, np.searchsorted(ticks, 0), 0)
         # print(f'Axis ticks: {ticks}\n')
-        padding = int(padding * dist/2)
-        padding = padAdj / 10 if padding == 0 else padding
+        if padAdj:
+            padding = padAdj / 10
         
         return list(ticks), padding
+
 
     @staticmethod
     def derivative(f, idxDiffArg=1):

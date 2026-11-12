@@ -21,6 +21,8 @@ Such equation systems are also referred to as vector ODEs. An example is:
             u' = v,     u(0) = 1
             v' = -u,    v(0) = 0
 
-
+In this example, the system is u = cos t, v = sin t, which can be
+easily verified by inserting the solution into the equations and the initial
+conditions
 
 """

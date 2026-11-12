@@ -5,11 +5,9 @@ Chapter 1.1: Solving ODEs with the Forward Euler
 from functions import ODE
 import pandas as pd
 import numpy as np
-import sys
 
 
 ode = ODE()
-
 
 """
 1.1 General-purpose ODE Solver
