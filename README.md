@@ -16,9 +16,9 @@ Install modules:
 
 Topics:
 
-- 1.1 General-purpose ODE Solver 
-- 1.2 ODE Solver Implemented as a Class
-- 1.3 Systems of ODEs
+- 1.1 Solving ODEs with the Forward Euler
+- 1.2 Systems of ODEs
+- 
 - 1.4 ForwardEuler Class for Systems of ODEs
 - 1.5 Checking the Error in the Numerical Solution
 - 1.6 Using ODE Solvers from SciPy

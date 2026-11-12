@@ -3,7 +3,7 @@
 Our goal is to implement numerical solvers that can be applied to any ODE, without being
 limited to a single example or a specific class of equations.
 To achieve this, we need a general abstract notation for an arbitrary ODE.
-We will write the ODEs on the following form:
+We will write the ODEs in the following form:
 
             u′(t) = f(t, u(t))                                                       (1.1)
 
