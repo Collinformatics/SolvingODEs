@@ -27,19 +27,23 @@ eˣ
 # Input: Figure Params
 inA = 0.5
 inInitU = 6
-inColors = ['black', 'limegreen', 'deepskyblue', 'violet']
+inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
 inTime = 3
 inTimeStep = 0.05
-inNumDatapoints = [80, 40, 20]
+inNumDatapoints = [160, 80, 40, 20]
 
 # Input: Save Params
 inOverwriteFigs = True
 inDirFigure = 'CH1'
 inPlotFig = True
 
-# Generate exponential curve
+# Input: Function
 def fn(t, u=inInitU,):
-    return t**2 + u
+    return u*t/3 - 9*np.sin(t) + u
+
+
+# ========================================================================================
+# Generate exponential curve
 time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
 y = fn(time)
 data = pd.DataFrame(y, index=time, columns=['Actual'])
@@ -51,7 +55,6 @@ curves = ode.forwardEuler(
     pHeader='Euler Method', figDir=inDirFigure
 )
 lines += curves
-
 
 # Set params
 ode.overwriteFigs = inOverwriteFigs

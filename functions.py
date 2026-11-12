@@ -240,8 +240,7 @@ class ODE:
             numCurves = len(data)
             df = False
         c = ['black', 'crimson', 'gold', 'darkgreen', 'lightgreen', 'limegreen',
-             'teal', 'turquoise', 'royalblue',
-             'indigo', 'darkviolet', 'gray']
+             'teal', 'turquoise', 'royalblue', 'indigo', 'darkviolet', 'gray']
         diff, n = numCurves-len(colors), len(c)
         if diff > n:
             print(1)
