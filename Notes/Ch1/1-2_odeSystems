@@ -12,6 +12,7 @@ In this example, the system is:
             u = cos(t)
             v = sin(t)
 
+
 For more general cases, it is usually even more difficult to find analytical solutions of
 ODE systems than solutions of scalar ODEs, and numerical methods are usually necessary.
 
@@ -20,8 +21,36 @@ Our goal is to develop general software capable of solving any vector ODE or sca
 To achieve this, it is helpful to introduce some general mathematical notation.
 We have "m" unknowns:
 
-            u^(0)(t), u^(1)(t), ... , u^(m-1)(t)
+            u⁰(t), u¹(t), ... , uᵐ⁻¹(t)
 
+
+In a system of "m" ODEs:
+
+            du⁰/dt = f⁰(t, u⁰(t), u¹(t), ... , uᵐ⁻¹(t))
+            du¹/dt = f¹(t, u⁰(t), u¹(t), ... , uᵐ⁻¹(t))
+            ...
+            duᵐ⁻¹/dt = fᵐ⁻¹(t, u⁰(t), u¹(t), ... , uᵐ⁻¹(t))
+
+
+To simplify the notation (and later the implementation), we can collect both the solutions
+ uⁱ(t) and right-hand side functions fⁱ into vectors
+
+            u = u⁰, u¹, ... , uᵐ⁻¹
+
+and
+
+            f = f⁰, f¹, ... , fᵐ⁻¹
+
+
+Note that "f" is now a vector-valued function.
+It takes "m+1" input arguments ("t" and the "m components of u") and returns a vector of m
+values.
+
+Using this notation, the ODE system can be written:
+
+            u′ = f(t, u), u(t₀) = u₀
+
+    where "u" and "f" are now vectors and "u₀" is a vector of initial conditions.
 
 
 

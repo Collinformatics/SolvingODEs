@@ -9,12 +9,12 @@ So we can write a given ODE "u'(t)" in the following form:
             u′(t) = f(t, u(t))                                                       (1.1)
 
 Because the DE shows the rate of change over a time interval "Δt", we can use Eqt 1.1 
-to predict the next output of u(t_n+1) with the following Eqt, the Forward Euler:
+to predict the next output of u(tₙ₊₁) with the following Eqt, the Forward Euler:
 
-            u_n+1 = u_n + Δt * f(t_n, u_n)                                           (1.2)
+            uₙ₊₁ = uₙ + Δt * f(tₙ, uₙ)                                           (1.2)
 
-For this we simply need the initial value "u_0" at t_0 where u(t_0) = u_0, then we can 
-predict the next value in the curve "u_n+1" by the rate of change we expect at each "Δt".
+For this we simply need the initial value "u₀" at t₀ where u(t₀) = u₀, then we can 
+predict the next value in the curve "uₙ₊₁" by the rate of change we expect at each "Δt".
 
 
 The following code will pass a derivative of a function to ode.forwardEuler so that we 
