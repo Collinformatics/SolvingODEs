@@ -16,11 +16,9 @@ Examples of this function may be:
 
 - For the sake of generality, we write all the right-hand sides of the ODEs as functions
 of both "t" and "u", even though the mathematical formulations only involve "u".
-- This is highly convenient when we start programming and want to use the same solver for
-a diverse range of ODE models.
 
 Now, our objective is to write functions and classes that accept the function "f" as input
- and solve the corresponding ODE to generate the output u.
+ and solve the corresponding ODE to generate the output "u".
 
 
 To ensure a unique solution for (1.1), it is necessary to specify the initial condition
@@ -40,13 +38,13 @@ Every ODE problem discussed in this book is an initial value problem.
 
 A numerical method for (1.1) can be derived by using a finite difference approximation for
  the derivative in the equation u′ = f(t, u). To introduce this idea, let us assume that
- we have already computed "u" at discrete time points t0, t1, ... , tn.
+ we have already computed "u" at discrete time points t_0, t_1, ... , t_n.
 
-At time tn we have the ODE:
+At time t_n we have the ODE:
 
             u′(t_n) = f(t_n, u(t_n))
 
-And we can now approximate u′(tn) with a forward finite difference:
+And we can now approximate u′(t_n) with a forward finite difference:
 
             u′(t_n) = (u(t_n+1) - u(t_n)) / Δt
 
@@ -54,22 +52,15 @@ By inserting this approximation into the ODE at t=t_n, we obtain the following e
 
             (u(t_n+1) - u(t_n)) / Δt = f(t_n, u(t_n))
 
-And we can rearrange the terms to obtain an explicit formula for u(tn+1):
+And we can rearrange the terms to obtain an explicit formula for u(t_n+1):
 
             u(t_n+1) = u(t_n) + Δt * f(t_n, u(t_n))
 
 We can simplify the formula by substituting u(t_n) for u_n
 
-            u_n+1 = u_n + Δt * f(t_n, u_n)
+            u_n+1 = u_n + Δt * f(t_n, u_n)                                           (1.2)
 
-If we know the u0 at time t0, can be applied repeatedly to u1, u2, u3 and so forth.
-If we again consider the very simple ODE given by u′ = u (i.e., f(t, u) = u), we have:
+This allow us to use the derivative of a curve to approximate the next value "u_n+1" that
+ is found a time step "Δt" after "u_n".
 
-            u_1 = u_0 + Δt * u_0
-            u_2 = u_1 + Δt * u_1
-            ...
-
-And we can obtain the general update formula:
-
-            u_n+1 = u_n + Δt * u_n = (1 + Δt) * u_n
 

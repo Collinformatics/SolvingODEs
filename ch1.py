@@ -1,12 +1,10 @@
 """
-Chapter 1:
-
+Chapter 1: Solving ODEs with the Forward Euler
 """
 
 from functions import ODE
 import pandas as pd
 import numpy as np
-from sympy import exp, latex, symbols, pretty
 import sys
 
 
@@ -27,14 +25,13 @@ Try experimenting with a different number of datapoints to see their effect.
 eˣ
 """
 # Input: Figure Params
-inA = 0.5
 inInitValue = 0
-inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
-inTime = 3
+inTime = 3 # x-max
 inTimeStep = 0.05
 inNumDatapoints = [160, 80, 40, 20]
 
-# Input: Save Params
+# Input: Figure Params
+inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
 inOverwriteFigs = True
 inDirFigure = 'CH1'
 inPlotFig = True
@@ -50,15 +47,14 @@ ode.overwriteFigs = inOverwriteFigs
 
 # Generate exponential curve
 time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
-y = fn(time)
-data = pd.DataFrame(y, index=time, columns=['Actual'])
+data = pd.DataFrame(fn(time), index=time, columns=['Actual'])
 
 # Differentiate
 df_dt = ode.derivative(fn, idxDiffArg=0)
 
 # Estimate the curve
 lines = [data]
-curves = ode.forwardEuler(fPrime=df_dt, y0=inInitValue, time=inTime,
+curves = ode.forwardEuler(fPrime=df_dt, u0=inInitValue, time=inTime,
                           nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
 

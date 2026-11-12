@@ -136,16 +136,16 @@ class ODE:
             print('='*self.headerLen)
 
 
-    def forwardEuler(self, fPrime, y0, time, nDatapoints:list,
+    def forwardEuler(self, fPrime, u0, time, nDatapoints:list,
                      pHeader=True):
         """
         A numerical solution to an ODE
         :param fPrime: derivative of a function
-        :param y0: initial value
+        :param u0: initial value
         :param time: [int or float] duration, or maximum value of the x-axis
         :param nDatapoints: [list] Number of datapoint for a curve
         :param pHeader: [bool] print bar, [str] print bar with label
-        :return:
+        :return: [list] pd.Dataframes of each solution found at different dt values
         """
         if pHeader:
             if isinstance(pHeader, str):
@@ -157,15 +157,15 @@ class ODE:
         for N in nDatapoints:
             dt = time / N
             t = np.zeros(N+1)
-            y = np.zeros(N+1)
+            u = np.zeros(N+1)
             print(f'Timestep: {red}Δt={dt}{rst}')
 
             # Evaluate
-            y[0] = y0
+            u[0] = u0
             for n in range(N):
                 t[n + 1] = t[n] + dt
-                y[n + 1] = y[n] + dt * fPrime(t[n])
-            d = pd.DataFrame(y, index=t, columns=[f'Euler, Δt={dt}'])
+                u[n + 1] = u[n] + dt * fPrime(t[n])
+            d = pd.DataFrame(u, index=t, columns=[f'Euler, Δt={dt}'])
             datasets.append(d)
             print(f'{d}\n\n')
 
@@ -228,6 +228,19 @@ class ODE:
 
     def plotLines(self, data, colors, title, figName, labelX, labelY, yRotate=0,
                   figDir='', addGrid=True, saveFig=True):
+        """
+        :param data: [pd.DataFrame or list of pd.DataFrames]
+        :param title: [str] figure title
+        :param colors: [list] colors for the lines
+        :param figName: [str] file name for the saved figure
+        :param labelX: [str] axis label
+        :param labelY: [str] axis label
+        :param yRotate: [int] rotate the y-label
+        :param figDir: [str] save the fig at self.figDir/{figDir}/
+            if an empty string is provided the fig will be saved at self.figDir/
+        :param addGrid: [bool] add grid to the figure
+        :param saveFig: [bool] True: saves the fig, False: does not save the fig
+        """
         colors = self.formatList(colors)
         # Verify that there are a sufficient number of strings
         df = True
