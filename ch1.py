@@ -20,25 +20,23 @@ We will use the Euler Method as a numerical method to solve a DE.
 
 Pass a derivative of a function to ode.forwardEuler to numerically solve an ODE.
 Try experimenting with a different number of datapoints to see their effect.
-    Notice that the initial value (inInitValue) will be very important for the solution
-
-eˣ
+Notice that the initial value (inInitValue) will also be very important for the solution.
 """
-# Input: Figure Params
-inInitValue = 0
+# Input: Curve Params
+inInitValue = 0.1
 inTime = 3 # x-max
-inTimeStep = 0.05
-inNumDatapoints = [160, 80, 40, 20]
+inTimeStep = 0.05 # Timestep for actual curve
+inNumDatapoints = [160, 80, 40, 20] # Used to set Euler timesteps
 
 # Input: Figure Params
 inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
 inOverwriteFigs = True
 inDirFigure = 'CH1'
-inPlotFig = True
+inPlotFig = False
 
 # Input: Function
-def fn(t):
-    return t**2/3 - 9*np.sin(t)
+def fn(t, u=5):
+    return t**2
 
 
 # ========================================================================================
@@ -63,5 +61,36 @@ if inPlotFig:
     ode.plotLines(
         data=lines, colors=inColors, title='Solving an ODE: Forward Euler',
         figName=f'eulerSolution_nCurves-{len(inNumDatapoints)}', labelX='Time',
+        labelY='y(t)', figDir=inDirFigure,
+    )
+
+# ========================================================================================
+# Input: Curve Params
+inInitValue = 0.01
+inTime = 75 # x-max
+inTimeStep = 0.05 # Timestep for actual curve
+inNumDatapoints = [300, 150, 75, 25] # Used to set Euler timesteps
+
+# Input: Figure Params
+inColors = ['limegreen', 'deepskyblue', 'magenta', 'darkviolet']
+inOverwriteFigs = True
+inDirFigure = 'CH1'
+inPlotFig = True
+
+
+def logistic(t, u=inInitValue, alpha=0.2, R=24):
+    return alpha * u * (1 - u/R)
+
+# Estimate the curve
+lines = []
+curves = ode.forwardEuler(fPrime=logistic, u0=inInitValue, time=inTime,
+                          nDatapoints=inNumDatapoints, pHeader='Euler Method')
+lines += curves
+
+# Plot the approximations
+if inPlotFig:
+    ode.plotLines(
+        data=lines, colors=inColors, title='Solving a Logistic ODE: Forward Euler',
+        figName=f'eulerSolution_logistic_nCurves-{len(inNumDatapoints)}', labelX='Time',
         labelY='y(t)', figDir=inDirFigure,
     )

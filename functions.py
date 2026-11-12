@@ -1,5 +1,6 @@
 from autograd import grad
 from colorama import Fore, Style
+import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
@@ -113,6 +114,10 @@ class ODE:
 
 
     @staticmethod
+    def roundUp(v, m=5):
+        return math.ceil(v / m) * m
+
+    @staticmethod
     def derivative(f, idxDiffArg=1):
         """
         :param idxDiffArg:
@@ -140,7 +145,7 @@ class ODE:
                      pHeader=True):
         """
         A numerical solution to an ODE
-        :param fPrime: derivative of a function
+        :param fPrime: derivative of a function, format: f(t, u)
         :param u0: initial value
         :param time: [int or float] duration, or maximum value of the x-axis
         :param nDatapoints: [list] Number of datapoint for a curve
@@ -164,7 +169,7 @@ class ODE:
             u[0] = u0
             for n in range(N):
                 t[n + 1] = t[n] + dt
-                u[n + 1] = u[n] + dt * fPrime(t[n])
+                u[n + 1] = u[n] + dt * fPrime(t[n], u[n])
             d = pd.DataFrame(u, index=t, columns=[f'Euler, Δt={dt}'])
             datasets.append(d)
             print(f'{d}\n\n')
@@ -292,9 +297,16 @@ class ODE:
 
         # Axis params
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_xlim(right=self.roundUp(ax.get_xlim()[1]))
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-        if max(ax.get_ylim()) > 1:
-            ax.set_ylim(top=int(np.ceil(ax.get_ylim()[1])))
+        if  max(ax.get_ylim()) > 1:
+            if max(ax.get_ylim()) > 50:
+                ax.set_ylim(top=int(self.roundUp(ax.get_ylim()[1])))
+            elif max(ax.get_ylim()) > 10:
+                ax.set_ylim(top=int(self.roundUp(ax.get_ylim()[1], m=5)))
+            else:
+                ax.set_ylim(top=int(np.ceil(ax.get_ylim()[1])))
+        print(f'yMax: {ax.get_ylim()[1]}\n')
 
         # Grid
         if addGrid:
