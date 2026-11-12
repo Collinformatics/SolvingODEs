@@ -35,33 +35,6 @@ def pressKey(event):
         os.execl(python, python, *sys.argv)
 
 
-def getAxisTicks(values, largeValues=True, customSteps=None):
-    if customSteps is None:
-        customSteps = []
-    padding = 0.05
-    if not isinstance(values, list):
-        values = list(values)
-    if customSteps is not None:
-        steps = customSteps
-    else:
-        if largeValues:
-            steps = [25, 20, 30, 40, 50]
-        else:
-            steps = [5, 2, 3, 4]
-            padding = 0.01
-
-    dist = values[-1] - values[0]
-    padding = int(padding * dist)
-    ticks = []
-    for step in steps:
-        if dist % step == 0:
-            ticks = list(np.arange(values[0], values[-1] + step, step))
-            print(f'Step: {step}')
-            break
-    # print(f'xTicks: {ticks}\n')
-    return ticks, padding
-
-
 class ODE:
     def __init__(self):
         self.printN = 10
@@ -115,7 +88,36 @@ class ODE:
 
     @staticmethod
     def roundUp(v, m=5):
-        return math.ceil(v / m) * m
+        return int(math.ceil(v / m) * m)
+
+
+    def getAxisTicks(self, values, largeValues=True, customSteps=None,
+                     addZero=True):
+        values, padding, roundBy  = self.formatList(values), 0.05, 5
+        if customSteps is None:
+            customSteps = []
+        if customSteps:
+            steps = customSteps
+        else:
+            if largeValues:
+                steps = [25, 20, 30, 40, 50, 25, 15, 45, 75, 10, 5]
+            else:
+                steps = [4, 3, 2, 2.5, 1]
+                padding = 0.01
+        dist = self.roundUp(values[-1] - values[0], m=roundBy)
+        padding = int(padding * dist)
+        ticks = []
+        for step in steps:
+            if dist % step == 0:
+                ticks = list(np.arange(values[0], values[-1] + step, step))
+                if len(ticks) > 3:
+                    break
+        ticks = []
+        if ticks and addZero and 0 not in ticks:
+            ticks = np.insert(ticks, np.searchsorted(ticks, 0), 0)
+            print(f'Axis ticks: {ticks}\n')
+        return ticks, padding
+
 
     @staticmethod
     def derivative(f, idxDiffArg=1):
@@ -277,45 +279,61 @@ class ODE:
 
         # Plot figure
         fig, ax = plt.subplots(figsize=self.figSize)
+        xTicks = []
         if df:
+            xTicks = list(data.index)
             for i in range(numCurves):
                 ax.plot(data.index, data.iloc[:,i], color=colors[i],
                     label=data.columns[i], linewidth=self.lineThickness)
         else:
             for i, d in enumerate(data):
+                if not xTicks:
+                    xTicks = list(d.index)
                 for c in range(len(d.columns)):
                     ax.plot(d.index, d.iloc[:, c], color=colors[i],
                             label=d.columns[c], linewidth=self.lineThickness)
-        ax.legend(fontsize=self.labelSizeTicks, loc='best',
-                  edgecolor='black', framealpha=0.8)
+        ax.legend(fontsize=self.labelSizeTicks, loc='best', edgecolor='black',
+                  framealpha=0.8)
+        ax.axhline(y=0, color='black', linewidth=self.lineThickness)
 
         # Styling
         ax.set_title(title, fontsize=self.labelSizeTitle, fontweight='bold')
         ax.set_xlabel(labelX, fontsize=self.labelSizeAxis)
         ax.set_ylabel(labelY, fontsize=self.labelSizeAxis, labelpad=20, rotation=yRotate)
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=12, width=self.lineThickness)
 
         # Axis params
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.set_xlim(right=self.roundUp(ax.get_xlim()[1]))
-        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-        if  max(ax.get_ylim()) > 1:
-            if max(ax.get_ylim()) > 50:
-                ax.set_ylim(top=int(self.roundUp(ax.get_ylim()[1])))
-            elif max(ax.get_ylim()) > 10:
-                ax.set_ylim(top=int(self.roundUp(ax.get_ylim()[1], m=5)))
-            else:
-                ax.set_ylim(top=int(np.ceil(ax.get_ylim()[1])))
-        print(f'yMax: {ax.get_ylim()[1]}\n')
+        if xTicks:
+            large = True if max(xTicks) >= 10 else False
+            xTicks, pad = self.getAxisTicks(values=xTicks, largeValues=large)
+            if 0 not in xTicks:
+                xTicks = np.insert(xTicks, np.searchsorted(xTicks, 0), 0)
+            ax.set_xlim(xTicks[0] - pad, xTicks[-1] + pad)
+            
+            ax.set_xticks(xTicks)
+        else:
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        yTicks = ax.get_yticks()
+        if len(yTicks) > 0:
+            large = True if max(yTicks) >= 10 else False
+            yTicks, pad = self.getAxisTicks(values=yTicks, largeValues=large)
+            if len(yTicks) > 0:
+                ax.set_ylim(yTicks[0] - pad, yTicks[-1] + pad)
+                ax.set_yticks(yTicks)
+        if len(yTicks) < 1:
+            print('man')
+            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        print(f'Y-Ticks:\n{ax.get_yticks()}\n')
 
         # Grid
         if addGrid:
-            ax.grid(True, linewidth=0.25, color='black')
+            ax.grid(True, linewidth=self.lineThickness, color='lightgrey')
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
 
         for _, spine in ax.spines.items():
             spine.set_visible(True)
+            spine.set_linewidth(self.lineThickness)
 
         plt.tight_layout()
         if saveFig:
