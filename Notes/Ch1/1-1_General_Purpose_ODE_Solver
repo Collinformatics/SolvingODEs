@@ -5,9 +5,9 @@ limited to a single example or a specific class of equations.
 To achieve this, we need a general abstract notation for an arbitrary ODE.
 We will write the ODEs on the following form:
 
-            u′(t) = f (t, u(t))                                                      (1.1)
+            u′(t) = f(t, u(t))                                                       (1.1)
 
-The ODE is fully specified by the definition of the right-hand side function f (t, u).
+The ODE is fully specified by the definition of the right-hand side function f(t, u).
 Examples of this function may be:
 
             f(t, u) = αu, exponential growth
@@ -27,7 +27,7 @@ To ensure a unique solution for (1.1), it is necessary to specify the initial co
 for "u". This initial condition corresponds to the value of the solution at a specific
 time "t" = "t_0". The resulting mathematical problem can be expressed as:
 
-            u′(t) = f (t, u(t)),
+            u′(t) = f(t, u(t)),
             u(t0) = u0,
 
 and is commonly referred to as an initial value problem, or simply an IVP.
@@ -39,8 +39,8 @@ Every ODE problem discussed in this book is an initial value problem.
 # A Simple and General Solver: the Forward Euler Method.
 
 A numerical method for (1.1) can be derived by using a finite difference approximation for
- the derivative in the equation u′ = f (t, u). To introduce this idea, let us assume that
- we have already computed "u" at discrete time points t0, t1, . . . , tn.
+ the derivative in the equation u′ = f(t, u). To introduce this idea, let us assume that
+ we have already computed "u" at discrete time points t0, t1, ... , tn.
 
 At time tn we have the ODE:
 
@@ -56,7 +56,20 @@ By inserting this approximation into the ODE at t=t_n, we obtain the following e
 
 And we can rearrange the terms to obtain an explicit formula for u(tn+1):
 
+            u(t_n+1) = u(t_n) + Δt * f(t_n, u(t_n))
 
+We can simplify the formula by substituting u(t_n) for u_n
 
+            u_n+1 = u_n + Δt * f(t_n, u_n)
 
+If we know the u0 at time t0, can be applied repeatedly to u1, u2, u3 and so forth.
+If we again consider the very simple ODE given by u′ = u (i.e., f(t, u) = u), we have:
+
+            u_1 = u_0 + Δt * u_0
+            u_2 = u_1 + Δt * u_1
+            ...
+
+And we can obtain the general update formula:
+
+            u_n+1 = u_n + Δt * u_n = (1 + Δt) * u_n
 

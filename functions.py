@@ -136,19 +136,22 @@ class ODE:
             print('='*self.headerLen)
 
 
-    def forwardEuler(self, f, y0, time, nDatapoints:list, plotFig=False,
-                     lineColor='green', figTitle='Euler Method', figName='Euler',
-                     figDir='', pHeader=False):
+    def forwardEuler(self, fPrime, y0, time, nDatapoints:list,
+                     pHeader=True):
+        """
+        A numerical solution to an ODE
+        :param fPrime: derivative of a function
+        :param y0: initial value
+        :param time: [int or float] duration, or maximum value of the x-axis
+        :param nDatapoints: [list] Number of datapoint for a curve
+        :param pHeader: [bool] print bar, [str] print bar with label
+        :return:
+        """
         if pHeader:
             if isinstance(pHeader, str):
                 self.header(txt=pHeader)
             else:
                 self.header()
-
-        # Get the derivative of f with respect to the first (or 0th) param
-        # Ex:
-            # f(t, u) -> df/dt
-        fPrime = self.derivative(f, idxDiffArg=0)
 
         datasets = []
         for N in nDatapoints:
@@ -165,12 +168,6 @@ class ODE:
             d = pd.DataFrame(y, index=t, columns=[f'Euler, Δt={dt}'])
             datasets.append(d)
             print(f'{d}\n\n')
-
-        if plotFig:
-            self.plotLines(
-                data=datasets, colors=lineColor, title=figTitle, figName=figName,
-                labelX='Time', labelY='y(t)', figDir=figDir
-            )
 
         return datasets
 

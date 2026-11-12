@@ -20,13 +20,15 @@ ode = ODE()
 
 We will use the Euler Method as a numerical method to solve a DE.
 
-Try experimenting with a different number of datapoints to see their effect
+Pass a derivative of a function to ode.forwardEuler to numerically solve an ODE.
+Try experimenting with a different number of datapoints to see their effect.
+    Notice that the initial value (inInitValue) will be very important for the solution
 
 eˣ
 """
 # Input: Figure Params
 inA = 0.5
-inInitU = 6
+inInitValue = 0
 inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
 inTime = 3
 inTimeStep = 0.05
@@ -38,26 +40,27 @@ inDirFigure = 'CH1'
 inPlotFig = True
 
 # Input: Function
-def fn(t, u=inInitU,):
-    return u*t/3 - 9*np.sin(t) + u
+def fn(t):
+    return t**2/3 - 9*np.sin(t)
 
 
 # ========================================================================================
+# Set params
+ode.overwriteFigs = inOverwriteFigs
+
 # Generate exponential curve
 time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
 y = fn(time)
 data = pd.DataFrame(y, index=time, columns=['Actual'])
 
+# Differentiate
+df_dt = ode.derivative(fn, idxDiffArg=0)
+
 # Estimate the curve
 lines = [data]
-curves = ode.forwardEuler(
-    f=fn, y0=inInitU, time=inTime, nDatapoints=inNumDatapoints,
-    pHeader='Euler Method', figDir=inDirFigure
-)
+curves = ode.forwardEuler(fPrime=df_dt, y0=inInitValue, time=inTime,
+                          nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
-
-# Set params
-ode.overwriteFigs = inOverwriteFigs
 
 # Plot the approximations
 if inPlotFig:
