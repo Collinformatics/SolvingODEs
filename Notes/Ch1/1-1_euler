@@ -1,4 +1,5 @@
-1.1 General-purpose ODE Solver
+1.1 Solving ODEs with the Forward Euler
+
 
 Our goal is to implement numerical solvers that can be applied to any ODE, without being
 limited to a single example or a specific class of equations.
@@ -60,7 +61,6 @@ We can simplify the formula by substituting u(t_n) for u_n
 
             u_n+1 = u_n + Δt * f(t_n, u_n)                                           (1.2)
 
-This allow us to use the derivative of a curve to approximate the next value "u_n+1" that
+This allows us to use the derivative of a curve to approximate the next value "u_n+1" that
  is found a time step "Δt" after "u_n".
-
 

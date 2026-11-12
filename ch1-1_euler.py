@@ -1,16 +1,6 @@
 """
 Chapter 1.1: Solving ODEs with the Forward Euler
-"""
 
-from functions import ODE
-import pandas as pd
-import numpy as np
-
-
-ode = ODE()
-
-"""
-1.1 General-purpose ODE Solver
 
 We will use the Euler Method as a numerical method to solve an ODE.
 An ODE can be though of as a function of time "t", and the parent function "u(t)". 
@@ -34,11 +24,27 @@ Try experimenting with a different number of datapoints to see their effect.
 Notice that the initial value (inInitValue) will also be very important for the solution.
 """
 
+from functions import ODE
+import pandas as pd
+import numpy as np
+
+
+ode = ODE()
+
+
+"""
+In the first example we'll create a function, and then compute df/dt, with this ODE we 
+can use the Forward Euler to solve it.
+
+By experimenting with different equations we can see how closely the Euler can come to 
+solving the DE, and what effect different timesteps have on the solution.
+"""
+
 # Input: Curve Params
 inInitValue = 9
 inTime = 3 # x-max
 inTimeStep = 0.01 # Timestep for actual curve
-inNumDatapoints = [300, 100, 50, 25] # Used to set Euler timesteps
+inNumDatapoints = [300, 100, 50, 25] # Euler timesteps, Δt = inTime/inNumDatapoints[i]
 
 # Input: Figure Params
 inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
