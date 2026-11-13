@@ -79,4 +79,14 @@ case, but with all the terms being vectors:
 
             uₖ₊₁ = uₖ + Δt*f(uₖ, tₖ)
 
+    note that all components in the above eqt are vectors.
+
+
+We could also write this formula in terms of the individual components, as in:
+
+            uⁱₖ₊₁ = uⁱₖ + Δt*fⁱ(uₖ, tₖ)
+
+    for i = 0, ... , m-1
+
+
 
