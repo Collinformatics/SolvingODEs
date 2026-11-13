@@ -30,7 +30,7 @@ inLength = 1 # meters
 inInitValue = np.array([np.pi/4, 0])
 inTimespan = [0, 6] # x-max
 inTimeStep = 0.01 # Timestep for actual curve
-inNumDatapoints = 300 # Euler timesteps, Δt = time/inNumDatapoints[i]
+inNumDatapoints = [600] # Euler timesteps, Δt = time/inNumDatapoints[i]
 
 # Input: Figure Params
 inColors = ['limegreen', 'darkviolet']
@@ -62,13 +62,13 @@ ode = ODE(overwriteFigs=inOverwriteFigs)
 fn = Pendulum(L=inLength)
 
 # Evaluate
-lines = ode.forwardEuler(fPrime=fn, u0=inInitValue, nDatapoints=inNumDatapoints,
-                         timespan=inTimespan)[0]
+lines, nCurves = ode.forwardEuler(fPrime=fn, u0=inInitValue, nDatapoints=inNumDatapoints,
+                         timespan=inTimespan)
 
 # Plot the approximations
 if inPlotFig:
     ode.plotLines(
         data=lines, colors=inColors, title='Forward Euler Solution of a Pendulum',
-        figName=f'eulerSolution_pendulum-nCurves-{len(lines.columns)}', labelX='Time',
+        figName=f'eulerSolution_pendulum-nCurves-{nCurves}', labelX='Time',
         labelY='y(t)', figDir=inDirFigure,
     )

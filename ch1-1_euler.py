@@ -67,15 +67,15 @@ df_dt = ode.derivative(fn, idxDiffArg=0)
 
 # Estimate the curve
 lines = [data]
-curves = ode.forwardEuler(fPrime=df_dt, u0=inInitValue, timespan=inTimespan,
-                          nDatapoints=inNumDatapoints, pHeader='Euler Method')
+curves, nCurves = ode.forwardEuler(fPrime=df_dt, u0=inInitValue, timespan=inTimespan,
+                                   nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
 
 # Plot the approximations
 if inPlotFig:
     ode.plotLines(
         data=lines, colors=inColors, title='Solving an ODE: Forward Euler',
-        figName=f'eulerSolution_nCurves-{len(inNumDatapoints)}', labelX='Time',
+        figName=f'eulerSolution_nCurves-{nCurves+1}', labelX='Time',
         labelY='y(t)', figDir=inDirFigure,
     )
 
@@ -104,14 +104,14 @@ def logistic(t, u=inInitValue, alpha=0.2, R=5):
 # # Execute Code
 # Estimate the curve
 lines = []
-curves = ode.forwardEuler(fPrime=logistic, u0=inInitValue, timespan=inTimespan,
-                          nDatapoints=inNumDatapoints, pHeader='Euler Method')
+curves, nCurves = ode.forwardEuler(fPrime=logistic, u0=inInitValue, timespan=inTimespan,
+                                   nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
 
 # Plot the approximations
 if inPlotFig:
     ode.plotLines(
         data=lines, colors=inColors, title='Solving a Logistic ODE: Forward Euler',
-        figName=f'eulerSolution_logistic_nCurves-{len(inNumDatapoints)}', labelX='Time',
+        figName=f'eulerSolution_logistic_nCurves-{nCurves}', labelX='Time',
         labelY='y(t)', figDir=inDirFigure,
     )

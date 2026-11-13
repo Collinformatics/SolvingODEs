@@ -1,3 +1,5 @@
+from os import rename
+
 from autograd import grad
 from colorama import Fore, Style
 import matplotlib.pyplot as plt
@@ -148,7 +150,8 @@ class ODE:
         return grad(f, argnum=idxDiffArg)
 
 
-    def forwardEuler(self, fPrime, u0, nDatapoints, timespan, pHeader='Euler Method'):
+    def forwardEuler(self, fPrime, u0, nDatapoints, timespan, pHeader='Euler Method',
+                     numCurves=True):
         """
         A numerical solution to an ODE
         :param fPrime: derivative of a function, format: f(t, u)
@@ -156,6 +159,7 @@ class ODE:
         :param timespan: [int or float] t_0 to t_final
         :param nDatapoints: Number of datapoint for a curve
         :param pHeader: [bool] print bar, [str] print bar with label
+        :param numCurves: [bool] return the number of generated curves
         :return: [list] pd.Dataframes of each solution found at different dt values
         """
 
@@ -166,9 +170,10 @@ class ODE:
                 self.header()
         
         # Setup
-        nDatapoints, datasets = self.formatList(nDatapoints), []
+        nDatapoints, datasets, nLines = self.formatList(nDatapoints), [], 0
         f = lambda t, u: np.asarray(fPrime(t, u), float) # Return vals as np.array
-        t0, time, = timespan
+        time = timespan[-1] - timespan[0]
+        stepsizes = [time / N for N in nDatapoints]
         
         if np.isscalar(u0) or len(u0) == 1:
             # Scalar ODE
@@ -181,8 +186,8 @@ class ODE:
             u0 = np.asarray(u0)
 
         # Approximate the function
-        for N in nDatapoints:
-            dt = (time - t0) / N
+        for idxN, N in enumerate(nDatapoints):
+            dt = time / N
             t = np.zeros(N + 1)
             if nEquations == 1:
                 u = np.zeros(N + 1)
@@ -195,15 +200,19 @@ class ODE:
             for n in range(N):
                 t[n + 1] = t[n] + dt
                 u[n + 1] = u[n] + dt * f(t[n], u[n])
-            if nEquations == 1:
-                cols = [f'Δt={dt}']
+            if nEquations != 1 and len(nDatapoints) != 1:
+                cols = [f'Vect{i}, Δt={stepsizes[idxN]}' for i in range(len(u.T))]
             else:
-                cols = [f'Vect{i}' for i in range(nEquations)]
+                cols = [f'Vect{i}, Δt={dt}' for i in range(nEquations)]
             d = pd.DataFrame(u, index=t, columns=cols)
+            nLines += len(d.columns)
             datasets.append(d)
             print(f'{d}\n\n')
 
-        return datasets
+        if numCurves:
+            return datasets, nLines
+        else:
+            return datasets
 
 
     def rk4(self, time, f, h, y0):
@@ -281,13 +290,14 @@ class ODE:
         if isinstance(data, pd.DataFrame):
             numCurves = len(data.columns)
         else:
-            numCurves = len(data)
+            numCurves = 0
+            for d in data:
+                numCurves += len(d.columns)
             df = False
         c = ['black', 'crimson', 'gold', 'darkgreen', 'lightgreen', 'limegreen',
              'teal', 'turquoise', 'royalblue', 'indigo', 'darkviolet', 'gray']
         diff, n = numCurves-len(colors), len(c)
         if diff > n:
-            print(1)
             for _ in range(diff):
                 colors.append(c[random.randint(0, n-1)])
         else:
@@ -313,16 +323,14 @@ class ODE:
                 ax.plot(data.index, data.iloc[:,i], color=colors[i],
                     label=data.columns[i], linewidth=self.lineThickness)
         else:
+            i = 0
             for idx, d in enumerate(data):
                 if not xTicks:
                     xTicks = list(d.index)
-                for idxC, c in enumerate(range(len(d.columns))):
-                    if idxC > idx:
-                        i = idxC
-                    else:
-                        i = idx
-                    ax.plot(d.index, d.iloc[:, c], color=colors[i],
-                            label=d.columns[c], linewidth=self.lineThickness)
+                for idxC in range(len(d.columns)):
+                    ax.plot(d.index, d.iloc[:, idxC], color=colors[i],
+                            label=d.columns[idxC], linewidth=self.lineThickness)
+                    i += 1
         ax.legend(fontsize=self.labelSizeTicks, loc='best', edgecolor='black',
                   framealpha=0.8)
         ax.axhline(y=0, color='black', linewidth=self.lineThickness)
