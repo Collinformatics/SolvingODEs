@@ -147,7 +147,7 @@ class ODE:
         return grad(f, argnum=idxDiffArg)
 
 
-    def forwardEuler(self, fPrime, u0, nDatapoints, timespan, pHeader=True):
+    def forwardEuler(self, fPrime, u0, nDatapoints, timespan, pHeader='Euler Method'):
         """
         A numerical solution to an ODE
         :param fPrime: derivative of a function, format: f(t, u)
@@ -165,15 +165,17 @@ class ODE:
                 self.header()
         
         # Setup
-        f = lambda t, u: np.asarray(fPrime(t, u), float)
+        f = lambda t, u: np.asarray(fPrime(t, u), float) # Return vals as np.array
         t0, time, = timespan
         datasets = []
         
-        if np.isscalar(u0) or len(u0) == 1: # scalar ODE
+        if np.isscalar(u0) or len(u0) == 1:
+            # Scalar ODE
             nEquations = 1 # Number of equations
             if isinstance(u0, list) or isinstance(u0, np.ndarray):
                 u0 = float(u0[0])
-        else: # System of ODEs
+        else:
+            # System of ODEs
             nEquations = u0.size # Number of equations
             u0 = np.asarray(u0)
 
@@ -195,7 +197,7 @@ class ODE:
             if nEquations == 1:
                 cols = [f'Δt={dt}']
             else:
-                cols = [f'Vect{i}, Δt={dt}' for i in range(nEquations)]
+                cols = [f'Vect{i}' for i in range(nEquations)]
             d = pd.DataFrame(u, index=t, columns=cols)
             datasets.append(d)
             print(f'{d}\n\n')

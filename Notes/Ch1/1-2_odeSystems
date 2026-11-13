@@ -89,3 +89,23 @@ We could also write this formula in terms of the individual components, as in:
 
 
 
+# ODE Model for a Pendulum:
+
+As an example, let us consider a system of ODEs that models the motion of a simple
+pendulum, as illustrated in Figure 1.1. This nonlinear system is a classic physics
+problem, and despite its simplicity, it is not possible to find an exact analytical
+solution.
+
+The system is formulated in terms of two main variables (see Figure 1.1);
+1) the angle θ
+2) the angular velocity ω
+
+For a simple pendulum with no friction, the dynamics of these variables are governed by:
+
+            dΘ / dt = ω                                                              (1.3)
+
+            dω / dt = -(g / L) * sin(Θ)                                              (1.4)
+
+
+
+
