@@ -29,9 +29,9 @@ conditions
 
 # Input: Curve Params
 inInitValue = np.array([0.1, 0.125])
-inTime = 3 # x-max
+inTimespan = [0, 3] # x-max
 inTimeStep = 0.01 # Timestep for actual curve
-inNumDatapoints = [300, 100, 50, 25] # Euler timesteps, Δt = inTime/inNumDatapoints[i]
+inNumDatapoints = [200] # Euler timesteps, Δt = time/inNumDatapoints[i]
 
 # Input: Figure Params
 inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
@@ -43,4 +43,7 @@ inPlotFig = True
 def fn(t, u):
     return 2*t + 1.5
 
-euler = ode.forwardEuler(fPrime=fn, u0=inInitValue)
+
+# ========================================================================================
+euler = ode.forwardEuler(fPrime=fn, u0=inInitValue, nDatapoints=inNumDatapoints,
+                         timespan=inTimespan)

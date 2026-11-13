@@ -44,7 +44,7 @@ solving the DE, and what effect different timesteps have on the solution.
 inInitValue = 9
 inTimespan = [0, 3] # x-max
 inTimeStep = 0.01 # Timestep for actual curve
-inNumDatapoints = [300, 100, 50, 25] # Euler timesteps, Δt = inTime/inNumDatapoints[i]
+inNumDatapoints = [300, 100, 50, 25] # Euler timesteps, Δt = time/inNumDatapoints[i]
 
 # Input: Figure Params
 inColors = ['black', 'limegreen', 'deepskyblue', 'magenta', 'darkviolet']
@@ -93,7 +93,7 @@ and use the Forward Euler to solve it.
 inInitValue = 0.01
 inTimespan = [0, 60]
 inTimeStep = 0.05 # Timestep for actual curve
-inNumDatapoints = [300, 150, 75, 25] # Used to set Euler timesteps
+inNumDatapoints = [300, 150, 75, 25] # Euler timesteps, Δt = time/inNumDatapoints[i]
 
 # Input: Figure Params
 inColors = ['limegreen', 'deepskyblue', 'magenta', 'darkviolet']

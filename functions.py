@@ -147,7 +147,7 @@ class ODE:
         return grad(f, argnum=idxDiffArg)
 
 
-    def forwardEuler(self, fPrime, u0, nDatapoints=[10], timespan=[0, 1], pHeader=True):
+    def forwardEuler(self, fPrime, u0, nDatapoints, timespan, pHeader=True):
         """
         A numerical solution to an ODE
         :param fPrime: derivative of a function, format: f(t, u)
