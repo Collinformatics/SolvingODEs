@@ -147,45 +147,64 @@ class ODE:
         return grad(f, argnum=idxDiffArg)
 
 
-    def forwardEuler(self, fPrime, u0, time, nDatapoints:list,
-                     pHeader=True):
+    def forwardEuler(self, fPrime, u0, nDatapoints=[10], timespan=[0, 1], pHeader=True):
         """
         A numerical solution to an ODE
         :param fPrime: derivative of a function, format: f(t, u)
         :param u0: initial value
-        :param time: [int or float] duration, or maximum value of the x-axis
+        :param timespan: [int or float] t_0 to t_final
         :param nDatapoints: [list] Number of datapoint for a curve
         :param pHeader: [bool] print bar, [str] print bar with label
         :return: [list] pd.Dataframes of each solution found at different dt values
         """
+
         if pHeader:
             if isinstance(pHeader, str):
                 self.header(txt=pHeader)
             else:
                 self.header()
-
+        
+        # Setup
+        f = lambda t, u: np.asarray(fPrime(t, u), float)
+        t0, time, = timespan
         datasets = []
+        
+        if np.isscalar(u0) or len(u0) == 1: # scalar ODE
+            nEquations = 1 # Number of equations
+            if isinstance(u0, list) or isinstance(u0, np.ndarray):
+                u0 = float(u0[0])
+        else: # System of ODEs
+            nEquations = u0.size # Number of equations
+            u0 = np.asarray(u0)
+
+        # Approximate the function
         for N in nDatapoints:
-            dt = time / N
-            t = np.zeros(N+1)
-            u = np.zeros(N+1)
+            dt = (time - t0) / N
+            t = np.zeros(N + 1)
+            if nEquations == 1:
+                u = np.zeros(N + 1)
+            else:
+                u = np.zeros((N + 1, nEquations))
             print(f'Timestep: {red}Δt={dt}{rst}')
 
             # Evaluate
             u[0] = u0
             for n in range(N):
                 t[n + 1] = t[n] + dt
-                u[n + 1] = u[n] + dt * fPrime(t[n], u[n])
-            d = pd.DataFrame(u, index=t, columns=[f'Euler, Δt={dt}'])
+                u[n + 1] = u[n] + dt * f(t[n], u[n])
+            if nEquations == 1:
+                cols = [f'Δt={dt}']
+            else:
+                cols = [f'Vect{i}, Δt={dt}' for i in range(nEquations)]
+            d = pd.DataFrame(u, index=t, columns=cols)
             datasets.append(d)
             print(f'{d}\n\n')
 
         return datasets
 
-    
-    @staticmethod
-    def rk4(time, f, h, y0):
-        print(f'Runge-Kutta')
+
+    def rk4(self, time, f, h, y0):
+        self.header(txt='Runge-Kutta')
         d = pd.DataFrame(0.0, index=time, columns=['RK4'])
 
         def step(t, u):
@@ -200,7 +219,7 @@ class ODE:
         for i, time in enumerate(d.index):
             d.loc[time, 'RK4'] = y
             y = step(t=time, u=y)
-        print(f'Data:\n{d}\n')
+        print(f'Data:\n{d}\n\n')
         return d
 
     
@@ -220,10 +239,10 @@ class ODE:
         path = self.getFigPath(figureName, pathDir)
         if os.path.exists(path) and not self.overwriteFigs:
             print(f'{yellow}Figure was already saved at path, the figure was not '
-                  f'overwritten:\n\t{path}{rst}\n')
+                  f'overwritten:\n\t{path}{rst}\n\n')
         else:
             plot.savefig(path, bbox_inches='tight')
-            print(f'Figure was saved at path:\n\t{green}{path}{rst}\n')
+            print(f'Figure was saved at path:\n\t{green}{path}{rst}\n\n')
         
     
     def plotFig(self, plot, figureName, pathDir='', fig=None):
@@ -311,7 +330,6 @@ class ODE:
         if xTicks:
             large = True if max(xTicks) >= 10 else False
             xTicks, pad = self.getAxisTicks(values=xTicks, largeValues=large)
-            print(f'Ticks: {xTicks}\n* Pad: {pad}\n')
             if 0 not in xTicks:
                 xTicks = np.insert(xTicks, np.searchsorted(xTicks, 0), 0)
             ax.set_xlim(xTicks[0] - pad, xTicks[-1] + pad)

@@ -42,7 +42,7 @@ solving the DE, and what effect different timesteps have on the solution.
 
 # Input: Curve Params
 inInitValue = 9
-inTime = 3 # x-max
+inTimespan = [0, 3] # x-max
 inTimeStep = 0.01 # Timestep for actual curve
 inNumDatapoints = [300, 100, 50, 25] # Euler timesteps, Δt = inTime/inNumDatapoints[i]
 
@@ -62,7 +62,7 @@ def fn(t, u=0.5):
 ode.overwriteFigs = inOverwriteFigs
 
 # Generate exponential curve
-time = np.arange(0, stop=inTime+inTimeStep, step=inTimeStep)
+time = np.arange(0, stop=inTimespan[-1]+inTimeStep, step=inTimeStep)
 data = pd.DataFrame(fn(time), index=time, columns=['Actual'])
 
 # Differentiate
@@ -70,7 +70,7 @@ df_dt = ode.derivative(fn, idxDiffArg=0)
 
 # Estimate the curve
 lines = [data]
-curves = ode.forwardEuler(fPrime=df_dt, u0=inInitValue, time=inTime,
+curves = ode.forwardEuler(fPrime=df_dt, u0=inInitValue, timespan=inTimespan,
                           nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
 
@@ -91,7 +91,7 @@ and use the Forward Euler to solve it.
 
 # Input: Curve Params
 inInitValue = 0.01
-inTime = 60 # x-max
+inTimespan = [0, 60]
 inTimeStep = 0.05 # Timestep for actual curve
 inNumDatapoints = [300, 150, 75, 25] # Used to set Euler timesteps
 
@@ -109,7 +109,7 @@ def logistic(t, u=inInitValue, alpha=0.2, R=5):
 # # Execute Code
 # Estimate the curve
 lines = []
-curves = ode.forwardEuler(fPrime=logistic, u0=inInitValue, time=inTime,
+curves = ode.forwardEuler(fPrime=logistic, u0=inInitValue, timespan=inTimespan,
                           nDatapoints=inNumDatapoints, pHeader='Euler Method')
 lines += curves
 
