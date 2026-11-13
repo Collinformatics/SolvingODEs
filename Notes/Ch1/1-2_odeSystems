@@ -1,3 +1,5 @@
+# Systems of ODEs:
+
 Many interesting processes can be described by systems of ODEs, which consist of multiple
 ODEs where the right-hand side of one equation depends on the solution of the
 others.
@@ -53,6 +55,28 @@ Using this notation, the ODE system can be written:
     where "u" and "f" are now vectors and "u₀" is a vector of initial conditions.
 
 
+This general notation is commonly employed in ODE textbooks, and we can easily make the
+Python implementation just as general. The use of NumPy arrays and vectorized
+computations greatly simplifies the generalization process and enhances the efficiency of
+our ODE solvers.
 
+
+
+# Using the Forward Euler for Systems of ODEs
+
+The forwardEuler() function was written for scalar ODEs, and we now want to modify it
+to handle a system of equations:
+
+            u′ = f , u(0) = u0,
+
+    where u, f and u0 are vectors (arrays).
+
+
+To identify how the code needs to be changed, let us first revisit the underlying
+numerical method. Using the general notation introduced earlier, when we apply the FE
+method to a system of ODEs, the update formula looks exactly the same as in the scalar
+case, but with all the terms being vectors:
+
+            uₖ₊₁ = uₖ + Δt*f(uₖ, tₖ)
 
 
