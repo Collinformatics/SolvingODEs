@@ -29,9 +29,6 @@ import pandas as pd
 import numpy as np
 
 
-ode = ODE()
-
-
 """
 In the first example we'll create a function, and then compute df/dt, with this ODE we 
 can use the Forward Euler to solve it.
@@ -58,8 +55,8 @@ def fn(t, u=0.5):
 
 
 # # Execute Code
-# Set params
-ode.overwriteFigs = inOverwriteFigs
+# Initialize class
+ode = ODE(overwriteFigs=inOverwriteFigs)
 
 # Generate exponential curve
 time = np.arange(0, stop=inTimespan[-1]+inTimeStep, step=inTimeStep)
@@ -97,8 +94,6 @@ inNumDatapoints = [300, 150, 75, 25] # Euler timesteps, Δt = time/inNumDatapoin
 
 # Input: Figure Params
 inColors = ['limegreen', 'deepskyblue', 'magenta', 'darkviolet']
-inOverwriteFigs = True
-inDirFigure = 'CH1'
 inPlotFig = True
 
 

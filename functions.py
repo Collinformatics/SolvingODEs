@@ -35,13 +35,13 @@ def pressKey(event):
 
 
 class ODE:
-    def __init__(self):
+    def __init__(self, overwriteFigs=False):
         self.printN = 10
         self.roundVal = 3
         self.headerLen = 80
         self.rstFloat = True
         self.webBrowserFigs = True
-        self.overwriteFigs = False
+        self.overwriteFigs = overwriteFigs
 
         # Params: Figures
         self.figDir = 'Figures'
@@ -75,7 +75,10 @@ class ODE:
     @staticmethod
     def formatList(d):
         if not isinstance(d, list):
-            d = list(d)
+            if isinstance(d, int) or isinstance(d, float):
+                d = [d]
+            else:
+                d = list(d)
         return d
 
 
@@ -109,7 +112,7 @@ class ODE:
     def getAxisTicks(self, values, largeValues=True, customSteps=None,
                      addZero=True):
         values, roundBy = self.formatList(values), 5
-        maxVal, padding, padAdj = int(max(values)), 0.5, False
+        maxVal, padding, padAdj = int(np.ceil(max(values))), 0.5, False
         if customSteps is None:
             customSteps = []
         if customSteps:
@@ -128,10 +131,8 @@ class ODE:
                     break
         if ticks and addZero and 0 not in ticks:
             ticks = np.insert(ticks, np.searchsorted(ticks, 0), 0)
-        # print(f'Axis ticks: {ticks}\n')
         if padAdj:
-            padding = padAdj / 10
-        
+            padding = padAdj / 5
         return list(ticks), padding
 
 
@@ -153,7 +154,7 @@ class ODE:
         :param fPrime: derivative of a function, format: f(t, u)
         :param u0: initial value
         :param timespan: [int or float] t_0 to t_final
-        :param nDatapoints: [list] Number of datapoint for a curve
+        :param nDatapoints: Number of datapoint for a curve
         :param pHeader: [bool] print bar, [str] print bar with label
         :return: [list] pd.Dataframes of each solution found at different dt values
         """
@@ -165,9 +166,9 @@ class ODE:
                 self.header()
         
         # Setup
+        nDatapoints, datasets = self.formatList(nDatapoints), []
         f = lambda t, u: np.asarray(fPrime(t, u), float) # Return vals as np.array
         t0, time, = timespan
-        datasets = []
         
         if np.isscalar(u0) or len(u0) == 1:
             # Scalar ODE
@@ -312,10 +313,14 @@ class ODE:
                 ax.plot(data.index, data.iloc[:,i], color=colors[i],
                     label=data.columns[i], linewidth=self.lineThickness)
         else:
-            for i, d in enumerate(data):
+            for idx, d in enumerate(data):
                 if not xTicks:
                     xTicks = list(d.index)
-                for c in range(len(d.columns)):
+                for idxC, c in enumerate(range(len(d.columns))):
+                    if idxC > idx:
+                        i = idxC
+                    else:
+                        i = idx
                     ax.plot(d.index, d.iloc[:, c], color=colors[i],
                             label=d.columns[c], linewidth=self.lineThickness)
         ax.legend(fontsize=self.labelSizeTicks, loc='best', edgecolor='black',
@@ -338,6 +343,8 @@ class ODE:
             ax.set_xticks(xTicks)
         elif not xTicks or len(xTicks) > 12:
             ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        # print(f'X-Ticks: {ax.get_xticks()}\n'
+        #       f'X-Lim: {ax.get_xlim()}\n')
 
         # Set: y-ticks
         yTicks = ax.get_yticks()
